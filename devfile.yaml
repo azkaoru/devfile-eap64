@@ -196,7 +196,10 @@ components:
       args:
         - '-f'
         - /dev/null
-      memoryLimit: 512Mi
+      memoryLimit: 512Mi      
+      volumeMounts:
+        - name: m2
+          path: /.m2          
 
   - name: postgres
     container:
