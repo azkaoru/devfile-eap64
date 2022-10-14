@@ -204,7 +204,7 @@ components:
       memoryLimit: 512Mi
       endpoints:
         - exposure: internal
-          name: db
+          name: pg
           protocol: tcp
           targetPort: 5432
       env:
@@ -222,7 +222,7 @@ commands:
   - id: build
     exec:
       component: tools
-      workingDir: ${PROJECTS_ROOT}/devfile-eap64
+      workingDir: ${PROJECT_SOURCE}
       commandLine: mvn clean install
       group:
         kind: build
@@ -234,7 +234,7 @@ commands:
       commandLine: >-
         cp jsp-counter/target/*.war /opt/jboss6/standlone/deploy && 
           echo 'Archive was deployed, click on eap endpoint from Workspace view to open the application'
-      workingDir: ${PROJECTS_ROOT}/devfile-eap64
+      workingDir: ${PROJECT_SOURCE}
       group:
         kind: run
         isDefault: true
@@ -243,9 +243,9 @@ commands:
     exec:
       component: eap64
       commandLine: >-
-        cp postgresql*.jar /opt/jboss5/jboss-as/common/lib &&
-          echo 'postgres jdbc driver was deployed'
-      workingDir: ${PROJECTS_ROOT}/devfile-eap64
+        /opt/jboss6/bin/jboss-cli.sh -c --file=${PROJECT_SOURCE}/config/jdbc.cli &&
+          echo 'postgres jdbc driver was configured'
+      workingDir: ${PROJECT_SOURCE}
       group:
         kind: run
         isDefault: true
@@ -254,20 +254,30 @@ commands:
     exec:
       component: eap64
       commandLine: >-
-        cp *ds.xml /opt/jboss5/jboss-as/server/production/deploy &&
-          echo 'ds-file was deployed'
-      workingDir: ${PROJECTS_ROOT}/devfile-eap64
+        /opt/jboss6/bin/jboss-cli.sh -c --file=${PROJECT_SOURCE}/config/datasource.cli &&
+          echo 'postgres datasource was configured'
+      workingDir: ${PROJECT_SOURCE}
       group:
         kind: run
         isDefault: true
 
+  - id: test-datasource
+    exec:
+      component: eap64
+      commandLine: >-
+        /opt/jboss6/bin/jboss-cli.sh -c --command='/subsystem=datasources/data-source=PostgresDS:test-connection-in-pool'
+      workingDir: ${PROJECT_SOURCE}
+      group:
+        kind: run
+        isDefault: true
+        
   - id: configure-messaging-destination
     exec:
       component: eap64
       commandLine: >-
-        cp destinations-service.xml /opt/jboss5/jboss-as/server/production/deploy/messaging &&
-          echo 'messaging-destination was deployed'
-      workingDir: ${PROJECTS_ROOT}/devfile-eap64
+        /opt/jboss6/bin/jboss-cli.sh -c --file=${PROJECT_SOURCE}/config/queue.cli &&
+          echo 'jms-queue was configured'
+      workingDir: ${PROJECT_SOURCE}
       group:
         kind: run
         isDefault: true
@@ -277,7 +287,7 @@ commands:
       component: eap64
       commandLine: >-
         /opt/jboss6/bin/jboss-cli.sh -c
-      workingDir: ${PROJECTS_ROOT}/devfile-eap64
+      workingDir: ${PROJECT_SOURCE}
       group:
         kind: run
         isDefault: true
@@ -285,9 +295,9 @@ commands:
   - id: prepare-database
     exec:
       component: postgres
-      workingDir: ${PROJECTS_ROOT}/devfile-eap64
+      workingDir: ${PROJECT_SOURCE}
       commandLine: >-
-        psql -U test -d testdb -f ${PROJECTS_ROOT}/devfile-eap64/import.sql &&
+        psql -U test -d testdb -f ${PROJECT_SOURCE}/config/import.sql &&
           echo 'Database testdb  was configured'
       group:
         kind: run
@@ -296,7 +306,7 @@ commands:
   - id: psql
     exec:
       component: postgres
-      workingDir: ${PROJECTS_ROOT}/devfile-eap64
+      workingDir: ${PROJECT_SOURCE}
       commandLine: >-
         psql -U test -d testdb
       group:
@@ -306,10 +316,9 @@ commands:
   - id: run-debug
     exec:
       component: tools
-      workingDir: ${PROJECTS_ROOT}/devfile-eap64
+      workingDir: ${PROJECT_SOURCE}
       commandLine: >-
         java -jar -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005 target/*.jar
       group:
         kind: run
         isDefault: true
-
