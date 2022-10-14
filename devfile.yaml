@@ -191,6 +191,11 @@ components:
   - name: eap64-mvn-repo
     container:
       image: 'registry.gitlab.com/ss-cloudnative/openshift/dev-eap64-mvn-repo'
+      command:
+      - tail
+      args:
+        - '-f'
+        - /dev/null
       memoryLimit: 512Mi
 
   - name: postgres
