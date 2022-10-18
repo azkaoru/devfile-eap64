@@ -183,24 +183,14 @@ components:
           targetPort: 8080
       env:
         - name: MYPROFILE
-          value: production
+          value: standalone-full-ha.xml
       memoryLimit: 1Gi
       mountSources: true
       sourceMapping: /projects
-
-  - name: eap64-mvn-repo
-    container:
-      image: 'registry.gitlab.com/ss-cloudnative/openshift/dev-eap64-mvn-repo'
-      command:
-      - tail
-      args:
-        - '-f'
-        - /dev/null
-      memoryLimit: 512Mi      
       volumeMounts:
         - name: m2
-          path: /.m2          
-
+          path: /.m2
+          
   - name: postgres
     container:
       image: postgres
@@ -224,7 +214,7 @@ commands:
 
   - id: build
     exec:
-      component: tools
+      component: eap64
       workingDir: ${PROJECT_SOURCE}
       commandLine: mvn clean install
       group:
