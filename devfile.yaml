@@ -225,12 +225,23 @@ commands:
     exec:
       component: eap64
       commandLine: >-
-        cp jsp-counter/target/*.war /opt/jboss6/standlone/deploy && 
+        cp jsp-counter/target/*.war /opt/jboss6/standlone/deployments && 
           echo 'Archive was deployed, click on eap endpoint from Workspace view to open the application'
       workingDir: ${PROJECT_SOURCE}
       group:
         kind: run
         isDefault: true
+
+  - id: configure-scanner
+    exec:
+      component: eap64
+      commandLine: >-
+        /opt/jboss6/bin/jboss-cli.sh -c --file=${PROJECT_SOURCE}/config/scanner.cli &&
+          echo 'deployment scanner was configured'
+      workingDir: ${PROJECT_SOURCE}
+      group:
+        kind: run
+        isDefault: true        
 
   - id: configure-jdbc
     exec:

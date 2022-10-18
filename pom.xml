@@ -13,7 +13,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <version.server.bom>6.4.0.GA</version.server.bom>
-    <eap.local.repo.url>file:///opt/maven3/jboss-eap-6.4.0.GA-maven-repository</eap.local.repo.url>
+    <eap.local.repo.url>file:///opt/jboss6/mvn-repo</eap.local.repo.url>
   </properties>
 	<dependencyManagement>
 		<dependencies>
@@ -41,7 +41,7 @@
 			
 			 <!-- importing the jakartaee8-with-tools BOM adds specs and other useful artifacts as managed dependencies -->
             <dependency>
-                <groupId>org.jboss.bom</groupId>
+                <groupId>org.jboss.bom.eap</groupId>
                 <artifactId>jboss-javaee-6.0-with-tools</artifactId>
                 <version>${version.server.bom}</version>
                 <type>pom</type>
