@@ -1,328 +1,145 @@
-schemaVersion: 2.1.0
+apiVersion: 1.0.0
 metadata:
-  name: devfile-eap64
+  name: devfile-eap64akdb
 attributes:
-  che-theia.eclipse.org/sidecar-policy: USE_DEV_CONTAINER
-  che-editor.yaml: |
-    schemaVersion: 2.1.0
-    metadata:
-      name: theia-ide
-    commands:
-      - id: init-container-command
-        apply:
-          component: remote-runtime-injector
-    events:
-      preStart:
-        - init-container-command
-    components:
-      - name: theia-ide
-        container:
-          image: 'quay.io/vgulyy/che-theia:devworkspace-plugins'
-          env:
-            - name: THEIA_PLUGINS
-              value: 'local-dir:///plugins'
-            - name: HOSTED_PLUGIN_HOSTNAME
-              value: 0.0.0.0
-            - name: HOSTED_PLUGIN_PORT
-              value: '3130'
-            - name: THEIA_HOST
-              value: 0.0.0.0
-          volumeMounts:
-            - name: plugins
-              path: /plugins
-            - name: theia-local
-              path: /home/theia/.theia
-          mountSources: true
-          memoryLimit: 2500M
-          cpuLimit: 1500m
-          cpuRequest: 100m
-          endpoints:
-            - name: theia
-              attributes:
-                type: main
-                cookiesAuthEnabled: true
-                discoverable: false
-                urlRewriteSupported: true
-              targetPort: 3100
-              exposure: public
-              secure: false
-              protocol: https
-            - name: webviews
-              attributes:
-                type: webview
-                cookiesAuthEnabled: true
-                discoverable: false
-                unique: true
-                urlRewriteSupported: true
-              targetPort: 3100
-              exposure: public
-              secure: false
-              protocol: https
-            - name: mini-browser
-              attributes:
-                type: mini-browser
-                cookiesAuthEnabled: true
-                discoverable: false
-                unique: true
-                urlRewriteSupported: true
-              targetPort: 3100
-              exposure: public
-              secure: false
-              protocol: https
-            - name: theia-dev
-              attributes:
-                type: ide-dev
-                discoverable: false
-                urlRewriteSupported: true
-              targetPort: 3130
-              exposure: public
-              protocol: http
-            - name: theia-redirect-1
-              attributes:
-                discoverable: false
-                urlRewriteSupported: true
-              targetPort: 13131
-              exposure: public
-              protocol: http
-            - name: theia-redirect-2
-              attributes:
-                discoverable: false
-                urlRewriteSupported: true
-              targetPort: 13132
-              exposure: public
-              protocol: http
-            - name: theia-redirect-3
-              attributes:
-                discoverable: false
-                urlRewriteSupported: true
-              targetPort: 13133
-              exposure: public
-              protocol: http
-            - name: terminal
-              attributes:
-                type: collocated-terminal
-                discoverable: false
-                cookiesAuthEnabled: true
-                urlRewriteSupported: true
-              targetPort: 3333
-              exposure: public
-              secure: false
-              protocol: wss
-        attributes:
-          app.kubernetes.io/component: che-theia
-          app.kubernetes.io/part-of: che-theia.eclipse.org
-      - name: plugins
-        volume: {}
-      - name: theia-local
-        volume: {}
-      - name: che-machine-exec
-        container:
-          image: 'quay.io/eclipse/che-machine-exec:next'
-          command:
-            - /go/bin/che-machine-exec
-            - '--url'
-            - '0.0.0.0:3333'
-          memoryLimit: 128Mi
-          memoryRequest: 32Mi
-          cpuLimit: 500m
-          cpuRequest: 30m
-        attributes:
-          app.kubernetes.io/component: machine-exec
-          app.kubernetes.io/part-of: che-theia.eclipse.org
-      - name: remote-runtime-injector
-        container:
-          image: 'quay.io/eclipse/che-theia-endpoint-runtime-binary@sha256:765c23fda5c85960d6f0df780453530604c7bdf0cc2542b133880851398954ff'
-          env:
-            - name: PLUGIN_REMOTE_ENDPOINT_EXECUTABLE
-              value: /remote-endpoint/plugin-remote-endpoint
-            - name: REMOTE_ENDPOINT_VOLUME_NAME
-              value: remote-endpoint
-          volumeMounts:
-            - name: remote-endpoint
-              path: /remote-endpoint
-            - name: plugins
-              path: /plugins
-          memoryLimit: 128Mi
-          memoryRequest: 32Mi
-          cpuLimit: 500m
-          cpuRequest: 30m
-        attributes:
-          app.kubernetes.io/component: remote-runtime-injector
-          app.kubernetes.io/part-of: che-theia.eclipse.org
-      - name: remote-endpoint
-        volume:
-          ephemeral: true
-
+  extensions.ignoreRecommendations: 'true'
 components:
-
-  - name: tools
-    container:
-      image: quay.io/devfile/universal-developer-image:ubi8-d433ed6
-      memoryLimit: 3Gi
-      endpoints:
-        - exposure: none
-          name: debug
-          protocol: tcp
-          targetPort: 5005
-      volumeMounts:
-        - name: m2
-          path: /home/user/.m2
-
-  - name: m2
-    volume:
-      size: 1G
-
-  - name: eap64
-    container:
-      image: 'registry.gitlab.com/ss-cloudnative/openshift/dev-eap64'
-      endpoints:
-        - exposure: public
-          name: root
-          path: /jsp-counter/
-          protocol: http
-          targetPort: 8080
-      env:
-        - name: MYPROFILE
-          value: standalone-full-ha.xml
-      memoryLimit: 1Gi
-      mountSources: true
-      sourceMapping: /projects
-      volumeMounts:
-        - name: m2
-          path: /.m2
-          
-  - name: postgres
-    container:
-      image: postgres
-      memoryLimit: 512Mi
-      endpoints:
-        - exposure: internal
-          name: pg
-          protocol: tcp
-          targetPort: 5432
-      env:
-        - name: PGDATA # workaround not using volume: chmod 700 in entrypoint that may fail in some volume class ... It will be ephemeral unfortunately
-          value: /tmp/pgdata
-        - value: test
-          name: POSTGRES_USER
-        - value: test
-          name: POSTGRES_PASSWORD
-        - value: testdb
-          name: POSTGRES_DB
-
+  - id: redhat/java8/latest
+    type: chePlugin
+  - mountSources: true
+    endpoints:
+      - name: debug
+        port: 5005
+    memoryLimit: 3Gi
+    type: dockerimage
+    volumes:
+      - name: m2
+        containerPath: /home/user/.m2
+    alias: tools
+    image: 'quay.io/devfile/universal-developer-image:ubi8-d433ed6'
+  - mountSources: true
+    endpoints:
+      - name: root
+        port: 8080
+    memoryLimit: 1Gi
+    type: dockerimage
+    volumes:
+      - name: m2
+        containerPath: /.m2
+    alias: eap64
+    image: registry.gitlab.com/ss-cloudnative/openshift/dev-eap64
+    env:
+      - value: standalone-full-ha.xml
+        name: MYPROFILE
+  - mountSources: true
+    endpoints:
+      - attributes:
+          public: 'false'
+        name: pg
+        port: 5432
+    memoryLimit: 512Mi
+    type: dockerimage
+    alias: postgres
+    image: postgres
+    env:
+      - value: /tmp/pgdata
+        name: PGDATA
+      - value: test
+        name: POSTGRES_USER
+      - value: test
+        name: POSTGRES_PASSWORD
+      - value: testdb
+        name: POSTGRES_DB
+  - id: redhat/vscode-xml/latest
+    type: chePlugin
+  - id: redhat/vscode-yaml/latest
+    type: chePlugin
 commands:
-
-  - id: build
-    exec:
-      component: eap64
-      workingDir: ${PROJECT_SOURCE}
-      commandLine: mvn clean install
-      group:
-        kind: build
-        isDefault: true
-
-  - id: deploy
-    exec:
-      component: eap64
-      commandLine: >-
-        cp jsp-counter/target/*.war /opt/jboss6/standalone/deployments && 
-          echo 'Archive was deployed, click on eap endpoint from Workspace view to open the application'
-      workingDir: ${PROJECT_SOURCE}
-      group:
-        kind: run
-        isDefault: true
-
-  - id: configure-scanner
-    exec:
-      component: eap64
-      commandLine: >-
-        /opt/jboss6/bin/jboss-cli.sh -c --file=${PROJECT_SOURCE}/config/scanner.cli &&
-          echo 'deployment scanner was configured'
-      workingDir: ${PROJECT_SOURCE}
-      group:
-        kind: run
-        isDefault: true        
-
-  - id: configure-jdbc
-    exec:
-      component: eap64
-      commandLine: >-
-        /opt/jboss6/bin/jboss-cli.sh -c --file=${PROJECT_SOURCE}/config/jdbc.cli &&
-          echo 'postgres jdbc driver was configured'
-      workingDir: ${PROJECT_SOURCE}
-      group:
-        kind: run
-        isDefault: true
-
-  - id: configure-datasource
-    exec:
-      component: eap64
-      commandLine: >-
-        /opt/jboss6/bin/jboss-cli.sh -c --file=${PROJECT_SOURCE}/config/datasource.cli &&
-          echo 'postgres datasource was configured'
-      workingDir: ${PROJECT_SOURCE}
-      group:
-        kind: run
-        isDefault: true
-
-  - id: test-datasource
-    exec:
-      component: eap64
-      commandLine: >-
-        /opt/jboss6/bin/jboss-cli.sh -c --command='/subsystem=datasources/data-source=PostgresDS:test-connection-in-pool'
-      workingDir: ${PROJECT_SOURCE}
-      group:
-        kind: run
-        isDefault: true
-        
-  - id: configure-messaging-destination
-    exec:
-      component: eap64
-      commandLine: >-
-        /opt/jboss6/bin/jboss-cli.sh -c --file=${PROJECT_SOURCE}/config/queue.cli &&
-          echo 'jms-queue was configured'
-      workingDir: ${PROJECT_SOURCE}
-      group:
-        kind: run
-        isDefault: true
-
-  - id: jboss-cli
-    exec:
-      component: eap64
-      commandLine: >-
-        /opt/jboss6/bin/jboss-cli.sh -c
-      workingDir: ${PROJECT_SOURCE}
-      group:
-        kind: run
-        isDefault: true
-
-  - id: prepare-database
-    exec:
-      component: postgres
-      workingDir: ${PROJECT_SOURCE}
-      commandLine: >-
-        psql -U test -d testdb -f ${PROJECT_SOURCE}/config/import.sql &&
-          echo 'Database testdb  was configured'
-      group:
-        kind: run
-        isDefault: true
-
-  - id: psql
-    exec:
-      component: postgres
-      workingDir: ${PROJECT_SOURCE}
-      commandLine: >-
-        psql -U test -d testdb
-      group:
-        kind: run
-        isDefault: true
-
-  - id: run-debug
-    exec:
-      component: tools
-      workingDir: ${PROJECT_SOURCE}
-      commandLine: >-
-        java -jar -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005 target/*.jar
-      group:
-        kind: run
-        isDefault: true
+  - name: build
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/devfile-eap64'
+        type: exec
+        command: mvn clean install
+        component: eap64
+  - name: deploy
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/devfile-eap64'
+        type: exec
+        command: |-
+          cp jsp-counter/target/*.war /opt/jboss6/standalone/deployments && 
+            echo 'Archive was deployed, click on eap endpoint from Workspace view to open the application'
+        component: eap64
+  - name: configure-scanner
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/devfile-eap64'
+        type: exec
+        command: |-
+          /opt/jboss6/bin/jboss-cli.sh -c --file=${CHE_PROJECTS_ROOT}/devfile-eap64/config/scanner.cli &&
+            echo 'deployment scanner was configured'
+        component: eap64
+  - name: configure-jdbc
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/devfile-eap64'
+        type: exec
+        command: |-
+          /opt/jboss6/bin/jboss-cli.sh -c --file=${CHE_PROJECTS_ROOT}/devfile-eap64/config/jdbc.cli &&
+            echo 'postgres jdbc driver was configured'
+        component: eap64
+  - name: configure-datasource
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/devfile-eap64'
+        type: exec
+        command: |-
+          /opt/jboss6/bin/jboss-cli.sh -c --file=${CHE_PROJECTS_ROOT}/devfile-eap64/config/datasource.cli &&
+            echo 'postgres datasource was configured'
+        component: eap64
+  - name: test-datasource
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/devfile-eap64'
+        type: exec
+        command: '/opt/jboss6/bin/jboss-cli.sh -c --command=''/subsystem=datasources/data-source=PostgresDS:test-connection-in-pool'''
+        component: eap64
+  - name: configure-messaging-destination
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/devfile-eap64'
+        type: exec
+        command: |-
+          /opt/jboss6/bin/jboss-cli.sh -c --file=${CHE_PROJECTS_ROOT}/devfile-eap64/config/queue.cli &&
+            echo 'jms-queue was configured'
+        component: eap64
+  - name: jboss-cli
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/devfile-eap64'
+        type: exec
+        command: /opt/jboss6/bin/jboss-cli.sh -c
+        component: eap64
+  - name: prepare-database
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/devfile-eap64'
+        type: exec
+        command: |-
+          psql -U test -d testdb -f ${CHE_PROJECTS_ROOT}/devfile-eap64/config/import.sql &&
+            echo 'Database testdb  was configured'
+        component: postgres
+  - name: psql
+    actions:
+      - workdir: '${CHE_PROJECTS_ROOT}/devfile-eap64'
+        type: exec
+        command: psql -U test -d testdb
+        component: postgres
+  - name: Debug (Attach)
+    actions:
+      - referenceContent: |
+          {
+          "version": "0.2.0",
+          "configurations": [
+          {
+              "type": "java",
+              "request": "attach",
+              "name": "Debug (Attach)",
+              "hostName": "localhost",
+              "port": 8000
+          }
+          ]
+          }
+        type: vscode-launch
