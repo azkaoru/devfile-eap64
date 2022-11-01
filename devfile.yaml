@@ -32,7 +32,7 @@ components:
     alias: eap74
     image: registry.gitlab.com/ss-cloudnative/openshift/dev-eap74
     env:
-      - value: standalone-full-ha.xml
+      - value: standalone.xml
         name: MYPROFILE
   - mountSources: true
     endpoints:
