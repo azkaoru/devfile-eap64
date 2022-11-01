@@ -34,7 +34,7 @@ components:
     env:
       - value: standalone-full-ha.xml
         name: MYPROFILE
-      - value: '100'
+      - value: 100
         name: JBOSS_PORT_OFFSET
   - mountSources: true
     endpoints:
