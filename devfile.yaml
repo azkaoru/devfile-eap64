@@ -22,6 +22,20 @@ components:
         name: MYPROFILE
   - mountSources: true
     endpoints:
+      - name: root
+        port: 8080
+    memoryLimit: 1Gi
+    type: dockerimage
+    volumes:
+      - name: m2
+        containerPath: /.m2
+    alias: eap74
+    image: registry.gitlab.com/ss-cloudnative/openshift/dev-eap74
+    env:
+      - value: standalone-full-ha.xml
+        name: MYPROFILE
+  - mountSources: true
+    endpoints:
       - attributes:
           public: 'false'
         name: pg
