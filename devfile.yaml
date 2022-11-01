@@ -8,17 +8,6 @@ components:
     type: chePlugin
   - mountSources: true
     endpoints:
-      - name: debug
-        port: 5005
-    memoryLimit: 3Gi
-    type: dockerimage
-    volumes:
-      - name: m2
-        containerPath: /home/user/.m2
-    alias: tools
-    image: 'quay.io/devfile/universal-developer-image:ubi8-d433ed6'
-  - mountSources: true
-    endpoints:
       - name: root
         port: 8080
     memoryLimit: 1Gi
